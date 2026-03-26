@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Activity, Sparkles, Loader2, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import WorkoutCard from "@/components/WorkoutCard";
+import { defaultWorkout, modifications, promptToModKey, type Workout } from "@/data/workoutData";
 import challengeImg from "@/assets/workout-challenge.jpg";
 import yogaImg from "@/assets/workout-yoga.jpg";
 import coreImg from "@/assets/workout-core.jpg";
@@ -11,7 +12,7 @@ import legsImg from "@/assets/workout-legs.jpg";
 import metconImg from "@/assets/workout-dumbbell-metcon.jpg";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const today = 2; // Wednesday
+const today = 2;
 
 const quickPrompts = [
   "I slept poorly",
@@ -21,10 +22,12 @@ const quickPrompts = [
 
 const HomeView = () => {
   const { toast } = useToast();
-  const [adapted, setAdapted] = useState(false);
+  const [currentWorkout, setCurrentWorkout] = useState<Workout>(defaultWorkout);
   const [showModify, setShowModify] = useState(false);
   const [adapting, setAdapting] = useState(false);
   const [customInput, setCustomInput] = useState("");
+
+  const isDefault = currentWorkout.title === defaultWorkout.title;
 
   const recommendedWorkouts = [
     { image: yogaImg, title: "Yoga for Runners", subtitle: "20 min · Flexibility" },
@@ -34,22 +37,21 @@ const HomeView = () => {
   ];
 
   const handleAdapt = (prompt: string) => {
+    const modKey = promptToModKey[prompt] || "hotel_gym";
+    const mod = modifications[modKey];
     setAdapting(true);
     setTimeout(() => {
       setAdapting(false);
       setShowModify(false);
-      setAdapted(true);
+      setCurrentWorkout(mod);
       toast({
         title: "Workout Adapted ✓",
-        description: `Workout adapted for Dumbbells. Progress saved.`,
+        description: mod.toast_message || "Workout updated.",
       });
     }, 2000);
   };
 
-  const workoutTitle = adapted ? "30-Min Dumbbell Metcon" : "45-Min Heavy Lower Body";
-  const workoutImg = adapted ? metconImg : legsImg;
-  const workoutIntensity = adapted ? "Medium" : "High";
-  const workoutEquipment = adapted ? "Dumbbells" : "Barbell & Plates";
+  const workoutImg = isDefault ? legsImg : metconImg;
 
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
@@ -97,7 +99,7 @@ const HomeView = () => {
       <div className="relative rounded-2xl overflow-hidden mb-2">
         <img
           src={workoutImg}
-          alt={workoutTitle}
+          alt={currentWorkout.title}
           className="w-full aspect-[16/9] object-cover transition-all duration-500"
           width={800}
           height={512}
@@ -108,14 +110,14 @@ const HomeView = () => {
             Today's Workout
           </p>
           <h2 className="text-primary-foreground font-black text-lg uppercase tracking-tight leading-tight">
-            {workoutTitle}
+            {currentWorkout.title}
           </h2>
           <div className="flex gap-4 mt-2 mb-3">
             <span className="text-primary-foreground/70 text-xs font-semibold">
-              Intensity: {workoutIntensity}
+              Intensity: {currentWorkout.intensity}
             </span>
             <span className="text-primary-foreground/70 text-xs font-semibold">
-              Equipment: {workoutEquipment}
+              Equipment: {currentWorkout.equipment.join(", ")}
             </span>
           </div>
           <button
