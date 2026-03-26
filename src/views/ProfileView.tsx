@@ -1,4 +1,4 @@
-import { Award, Flame, Sun, Target, Trophy, Zap, ChevronRight } from "lucide-react";
+import { Award, Flame, Sun, Target, Trophy, Zap, ChevronRight, Sparkles } from "lucide-react";
 
 const stats = [
   { label: "Workouts", value: "142" },
@@ -16,6 +16,13 @@ const badges = [
   { icon: Award, label: "Iron Will", unlocked: false },
 ];
 
+const profile = [
+  { label: "Goal", value: "Hypertrophy" },
+  { label: "Time Available", value: "45m / day" },
+  { label: "Diet", value: "Standard" },
+  { label: "Current Plan", value: "12-Week Hypertrophy · Week 4" },
+];
+
 const settings = ["Account", "Notifications", "Health Data Permissions", "Subscription", "Help & Support"];
 
 const ProfileView = () => (
@@ -31,6 +38,25 @@ const ProfileView = () => (
           <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1">{s.label}</p>
         </div>
       ))}
+    </div>
+
+    {/* Training Profile */}
+    <h2 className="text-nike-header text-sm mb-3">YOUR TRAINING PROFILE</h2>
+    <div className="card-premium mb-8">
+      <div className="flex items-center gap-2 mb-4">
+        <Sparkles size={16} className="text-nike-volt" />
+        <span className="text-[10px] font-bold uppercase tracking-wider text-primary-foreground/60">
+          AI Personalization Active
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+        {profile.map((p) => (
+          <div key={p.label}>
+            <p className="text-primary-foreground/50 text-[10px] uppercase tracking-wider font-semibold">{p.label}</p>
+            <p className="text-primary-foreground font-bold text-sm mt-0.5">{p.value}</p>
+          </div>
+        ))}
+      </div>
     </div>
 
     {/* Badges */}
