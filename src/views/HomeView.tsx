@@ -99,7 +99,7 @@ const HomeView = () => {
       <div className="relative rounded-2xl overflow-hidden mb-2">
         <img
           src={workoutImg}
-          alt={workoutTitle}
+          alt={currentWorkout.title}
           className="w-full aspect-[16/9] object-cover transition-all duration-500"
           width={800}
           height={512}
@@ -110,14 +110,14 @@ const HomeView = () => {
             Today's Workout
           </p>
           <h2 className="text-primary-foreground font-black text-lg uppercase tracking-tight leading-tight">
-            {workoutTitle}
+            {currentWorkout.title}
           </h2>
           <div className="flex gap-4 mt-2 mb-3">
             <span className="text-primary-foreground/70 text-xs font-semibold">
-              Intensity: {workoutIntensity}
+              Intensity: {currentWorkout.intensity}
             </span>
             <span className="text-primary-foreground/70 text-xs font-semibold">
-              Equipment: {workoutEquipment}
+              Equipment: {currentWorkout.equipment.join(", ")}
             </span>
           </div>
           <button
