@@ -22,10 +22,12 @@ const quickPrompts = [
 
 const HomeView = () => {
   const { toast } = useToast();
-  const [adapted, setAdapted] = useState(false);
+  const [currentWorkout, setCurrentWorkout] = useState<Workout>(defaultWorkout);
   const [showModify, setShowModify] = useState(false);
   const [adapting, setAdapting] = useState(false);
   const [customInput, setCustomInput] = useState("");
+
+  const isDefault = currentWorkout.title === defaultWorkout.title;
 
   const recommendedWorkouts = [
     { image: yogaImg, title: "Yoga for Runners", subtitle: "20 min · Flexibility" },
@@ -35,22 +37,21 @@ const HomeView = () => {
   ];
 
   const handleAdapt = (prompt: string) => {
+    const modKey = promptToModKey[prompt] || "hotel_gym";
+    const mod = modifications[modKey];
     setAdapting(true);
     setTimeout(() => {
       setAdapting(false);
       setShowModify(false);
-      setAdapted(true);
+      setCurrentWorkout(mod);
       toast({
         title: "Workout Adapted ✓",
-        description: `Workout adapted for Dumbbells. Progress saved.`,
+        description: mod.toast_message || "Workout updated.",
       });
     }, 2000);
   };
 
-  const workoutTitle = adapted ? "30-Min Dumbbell Metcon" : "45-Min Heavy Lower Body";
-  const workoutImg = adapted ? metconImg : legsImg;
-  const workoutIntensity = adapted ? "Medium" : "High";
-  const workoutEquipment = adapted ? "Dumbbells" : "Barbell & Plates";
+  const workoutImg = isDefault ? legsImg : metconImg;
 
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
