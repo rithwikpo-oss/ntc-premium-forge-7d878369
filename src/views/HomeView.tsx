@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Activity, Sparkles, Loader2, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import WorkoutCard from "@/components/WorkoutCard";
+import { defaultWorkout, modifications, promptToModKey, type Workout } from "@/data/workoutData";
 import challengeImg from "@/assets/workout-challenge.jpg";
 import yogaImg from "@/assets/workout-yoga.jpg";
 import coreImg from "@/assets/workout-core.jpg";
@@ -11,7 +12,7 @@ import legsImg from "@/assets/workout-legs.jpg";
 import metconImg from "@/assets/workout-dumbbell-metcon.jpg";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const today = 2; // Wednesday
+const today = 2;
 
 const quickPrompts = [
   "I slept poorly",
