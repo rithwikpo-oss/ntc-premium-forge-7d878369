@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Activity, Sparkles, Loader2, Send, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser } from "@/contexts/UserContext";
 import WorkoutCard from "@/components/WorkoutCard";
 import { defaultWorkout, modifications, promptToModKey, type Workout } from "@/data/workoutData";
 import challengeImg from "@/assets/workout-challenge.jpg";
@@ -22,12 +23,14 @@ const quickPrompts = [
 
 const HomeView = () => {
   const { toast } = useToast();
+  const { profile } = useUser();
   const [currentWorkout, setCurrentWorkout] = useState<Workout>(defaultWorkout);
   const [showModify, setShowModify] = useState(false);
   const [adapting, setAdapting] = useState(false);
   const [customInput, setCustomInput] = useState("");
 
   const isDefault = currentWorkout.title === defaultWorkout.title;
+  const pct = Math.round((profile.currentWeek / profile.totalWeeks) * 100);
 
   const recommendedWorkouts = [
     { image: yogaImg, title: "Yoga for Runners", subtitle: "20 min · Flexibility" },
@@ -53,6 +56,11 @@ const HomeView = () => {
 
   const workoutImg = isDefault ? legsImg : metconImg;
 
+  // Generate title based on daily time from onboarding
+  const workoutTitle = isDefault
+    ? `${profile.dailyTime}-Min Heavy Lower Body`
+    : currentWorkout.title;
+
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
       {/* Header */}
@@ -74,6 +82,10 @@ const HomeView = () => {
             >
               {17 + i}
             </div>
+            {/* Green dot for completed days */}
+            {i < today && (
+              <div className="w-1.5 h-1.5 rounded-full bg-nike-volt" />
+            )}
           </div>
         ))}
       </div>
@@ -82,24 +94,26 @@ const HomeView = () => {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-1.5">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-            Hypertrophy Block
+            {profile.goal} Block
           </span>
-          <span className="text-[10px] font-bold text-muted-foreground">Week 4 of 12</span>
+          <span className="text-[10px] font-bold text-muted-foreground">
+            Week {profile.currentWeek} of {profile.totalWeeks}
+          </span>
         </div>
         <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
             className="h-full bg-nike-volt rounded-full transition-all duration-500"
-            style={{ width: "35%" }}
+            style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-muted-foreground mt-1 font-semibold">35% Complete</p>
+        <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{pct}% Complete</p>
       </div>
 
       {/* Today's Scheduled Workout Card */}
       <div className="relative rounded-2xl overflow-hidden mb-2">
         <img
           src={workoutImg}
-          alt={currentWorkout.title}
+          alt={workoutTitle}
           className="w-full aspect-[16/9] object-cover transition-all duration-500"
           width={800}
           height={512}
@@ -110,7 +124,7 @@ const HomeView = () => {
             Today's Workout
           </p>
           <h2 className="text-primary-foreground font-black text-lg uppercase tracking-tight leading-tight">
-            {currentWorkout.title}
+            {workoutTitle}
           </h2>
           <div className="flex gap-4 mt-2 mb-3">
             <span className="text-primary-foreground/70 text-xs font-semibold">
@@ -161,7 +175,7 @@ const HomeView = () => {
           <div className="flex items-start gap-2">
             <Sparkles size={16} className="text-nike-volt mt-0.5 flex-shrink-0" />
             <p className="text-primary-foreground/80 text-xs leading-relaxed">
-              <span className="font-bold text-primary-foreground">AI Insight:</span> Your readiness is low today. We've automatically swapped your 45-min Heavy Squat session for a 15-min Recovery Mobility flow.
+              <span className="font-bold text-primary-foreground">AI Insight:</span> Your readiness is low today. We've automatically swapped your {profile.dailyTime}-min Heavy Squat session for a 15-min Recovery Mobility flow.
             </p>
           </div>
         </div>

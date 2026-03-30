@@ -5,6 +5,8 @@ import WorkoutsView from "@/views/WorkoutsView";
 import NutritionView from "@/views/NutritionView";
 import PremiumAIView from "@/views/PremiumAIView";
 import ProfileView from "@/views/ProfileView";
+import OnboardingWizard from "@/components/OnboardingWizard";
+import { UserProvider, useUser } from "@/contexts/UserContext";
 
 type Tab = "home" | "workouts" | "nutrition" | "premium" | "profile";
 
@@ -16,9 +18,14 @@ const views: Record<Tab, React.FC> = {
   profile: ProfileView,
 };
 
-const Index = () => {
+const AppContent = () => {
+  const { profile } = useUser();
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const ActiveView = views[activeTab];
+
+  if (!profile.onboarded) {
+    return <OnboardingWizard />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -27,5 +34,11 @@ const Index = () => {
     </div>
   );
 };
+
+const Index = () => (
+  <UserProvider>
+    <AppContent />
+  </UserProvider>
+);
 
 export default Index;
