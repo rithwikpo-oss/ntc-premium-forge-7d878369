@@ -5,13 +5,15 @@ import { Slider } from "@/components/ui/slider";
 
 const goals = ["Weight Loss", "Hypertrophy", "Longevity"];
 const genders = ["Male", "Female", "Other"];
-const cuisines = ["South Indian", "Mediterranean", "Vegan", "Standard Western", "Japanese", "Keto"];
+const cuisines = ["Standard", "Keto", "Vegan", "Mediterranean", "Paleo"];
 
 const OnboardingWizard = () => {
   const { setProfile } = useUser();
   const [step, setStep] = useState(1);
+  const [units, setUnits] = useState<"metric" | "imperial">("metric");
 
   // Step 1
+  const [name, setName] = useState("");
   const [age, setAge] = useState("28");
   const [weight, setWeight] = useState("78");
   const [height, setHeight] = useState("175");
@@ -19,28 +21,35 @@ const OnboardingWizard = () => {
 
   // Step 2
   const [goal, setGoal] = useState("Hypertrophy");
-  const [dailyTime, setDailyTime] = useState(45);
+  const [daysPerWeek, setDaysPerWeek] = useState(5);
 
   // Step 3
-  const [cuisine, setCuisine] = useState("Standard Western");
+  const [cuisine, setCuisine] = useState("Standard");
 
   const next = () => {
     if (step < 4) {
       setStep(step + 1);
       if (step === 3) {
-        // Start processing, then finish after 3s
         setTimeout(() => {
           setProfile({
+            name,
             age,
             weight,
             height,
             gender,
             goal,
-            dailyTime,
+            dailyTime: 45,
+            daysPerWeek,
             cuisine,
+            units,
             onboarded: true,
-            currentWeek: 1,
+            currentWeek: 4,
             totalWeeks: 12,
+            protein: 60,
+            carbs: 95,
+            fats: 28,
+            fiber: 8,
+            calories: 1200,
           });
         }, 3000);
       }
@@ -48,22 +57,45 @@ const OnboardingWizard = () => {
   };
 
   const canProceed =
-    (step === 1 && age && weight && height && gender) ||
+    (step === 1 && name && age && weight && height && gender) ||
     (step === 2 && goal) ||
     (step === 3 && cuisine);
 
   const inputClass =
     "w-full border border-border rounded-xl px-4 py-3 text-sm font-semibold bg-secondary focus:outline-none focus:ring-2 focus:ring-foreground";
 
+  const weightLabel = units === "metric" ? "Weight (kg)" : "Weight (lbs)";
+  const heightLabel = units === "metric" ? "Height (cm)" : "Height (in)";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Progress */}
+      {/* Progress + Unit Toggle */}
       <div className="px-5 pt-14 pb-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
             Step {step} of 4
           </span>
-          <Sparkles size={14} className="text-nike-volt" />
+          <div className="flex items-center gap-2">
+            <div className="flex bg-secondary rounded-full p-0.5">
+              <button
+                onClick={() => setUnits("metric")}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                  units === "metric" ? "bg-foreground text-background" : "text-muted-foreground"
+                }`}
+              >
+                Metric
+              </button>
+              <button
+                onClick={() => setUnits("imperial")}
+                className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                  units === "imperial" ? "bg-foreground text-background" : "text-muted-foreground"
+                }`}
+              >
+                Imperial
+              </button>
+            </div>
+            <Sparkles size={14} className="text-nike-volt" />
+          </div>
         </div>
         <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
@@ -76,22 +108,26 @@ const OnboardingWizard = () => {
         )}
       </div>
 
-      <div className="flex-1 px-5 pb-24">
+      <div className="flex-1 px-5 pb-24 overflow-y-auto">
         {/* Step 1: Biometrics */}
         {step === 1 && (
           <div className="space-y-4 animate-in fade-in duration-300">
             <p className="text-sm text-muted-foreground mb-4">Tell us about yourself</p>
             <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">First Name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className={inputClass} placeholder="Rohan" />
+            </div>
+            <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Age</label>
               <input value={age} onChange={(e) => setAge(e.target.value)} className={inputClass} placeholder="28" type="number" />
             </div>
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Weight (kg)</label>
-              <input value={weight} onChange={(e) => setWeight(e.target.value)} className={inputClass} placeholder="78" type="number" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">{weightLabel}</label>
+              <input value={weight} onChange={(e) => setWeight(e.target.value)} className={inputClass} placeholder={units === "metric" ? "78" : "172"} type="number" />
             </div>
             <div>
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Height (cm)</label>
-              <input value={height} onChange={(e) => setHeight(e.target.value)} className={inputClass} placeholder="175" type="number" />
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">{heightLabel}</label>
+              <input value={height} onChange={(e) => setHeight(e.target.value)} className={inputClass} placeholder={units === "metric" ? "175" : "69"} type="number" />
             </div>
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Gender</label>
@@ -110,46 +146,53 @@ const OnboardingWizard = () => {
           </div>
         )}
 
-        {/* Step 2: Goals & Time */}
+        {/* Step 2: Commitment & Goals */}
         {step === 2 && (
           <div className="space-y-6 animate-in fade-in duration-300">
-            <p className="text-sm text-muted-foreground mb-2">What's your primary goal?</p>
-            <div className="space-y-3">
-              {goals.map((g) => (
-                <button
-                  key={g}
-                  onClick={() => setGoal(g)}
-                  className={`w-full text-left rounded-2xl p-5 border-2 transition-all ${
-                    goal === g
-                      ? "border-foreground bg-primary text-primary-foreground"
-                      : "border-border bg-secondary"
-                  }`}
-                >
-                  <span className="font-black text-sm uppercase tracking-wider">{g}</span>
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-muted-foreground mb-2">How committed are you?</p>
+
             <div>
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
-                Daily Time Available: {dailyTime}m
+                Days Per Week: {daysPerWeek}
               </label>
               <Slider
-                value={[dailyTime]}
-                onValueChange={([v]) => setDailyTime(v)}
-                min={15}
-                max={90}
-                step={5}
+                value={[daysPerWeek]}
+                onValueChange={([v]) => setDaysPerWeek(v)}
+                min={1}
+                max={7}
+                step={1}
                 className="py-2"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground font-semibold mt-1">
-                <span>15m</span>
-                <span>90m</span>
+                <span>1 day</span>
+                <span>7 days</span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
+                Primary Goal
+              </label>
+              <div className="space-y-3">
+                {goals.map((g) => (
+                  <button
+                    key={g}
+                    onClick={() => setGoal(g)}
+                    className={`w-full text-left rounded-2xl p-5 border-2 transition-all ${
+                      goal === g
+                        ? "border-foreground bg-primary text-primary-foreground"
+                        : "border-border bg-secondary"
+                    }`}
+                  >
+                    <span className="font-black text-sm uppercase tracking-wider">{g}</span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         )}
 
-        {/* Step 3: Cuisine */}
+        {/* Step 3: Nutrition */}
         {step === 3 && (
           <div className="animate-in fade-in duration-300">
             <p className="text-sm text-muted-foreground mb-5">Choose your dietary preference</p>
@@ -189,7 +232,7 @@ const OnboardingWizard = () => {
             disabled={!canProceed}
             className="btn-volt w-full text-center py-4 disabled:opacity-40"
           >
-            {step === 3 ? "GENERATE MY PLAN" : "CONTINUE"}
+            {step === 3 ? "COMPLETE SETUP" : "CONTINUE"}
           </button>
         </div>
       )}

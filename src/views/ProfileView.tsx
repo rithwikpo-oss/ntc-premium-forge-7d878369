@@ -21,7 +21,7 @@ const badges = [
 ];
 
 const goalOptions = ["Weight Loss", "Hypertrophy", "Longevity"];
-const cuisineOptions = ["South Indian", "Mediterranean", "Vegan", "Standard Western", "Japanese", "Keto"];
+const cuisineOptions = ["Standard", "Keto", "Vegan", "Mediterranean", "Paleo"];
 
 const settings = ["Account", "Notifications", "Health Data Permissions", "Subscription", "Help & Support"];
 
@@ -31,7 +31,6 @@ const ProfileView = () => {
   const [showRecalibrate, setShowRecalibrate] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
 
-  // Editable copies
   const [editGoal, setEditGoal] = useState(profile.goal);
   const [editTime, setEditTime] = useState(profile.dailyTime);
   const [editCuisine, setEditCuisine] = useState(profile.cuisine);
@@ -47,17 +46,23 @@ const ProfileView = () => {
     }, 3000);
   };
 
+  const displayName = profile.name || "Rohan";
+  const weightUnit = profile.units === "imperial" ? "lbs" : "kg";
+  const heightUnit = profile.units === "imperial" ? "in" : "cm";
+
   const profileData = [
+    { label: "Age", value: profile.age || "28" },
+    { label: "Weight", value: `${profile.weight || "78"} ${weightUnit}` },
+    { label: "Height", value: `${profile.height || "175"} ${heightUnit}` },
     { label: "Goal", value: profile.goal },
     { label: "Time Available", value: `${profile.dailyTime}m / day` },
     { label: "Diet", value: profile.cuisine },
-    { label: "Current Plan", value: `12-Week ${profile.goal} · Week ${profile.currentWeek}` },
   ];
 
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
       <h1 className="text-nike-header text-2xl mb-2">PROFILE</h1>
-      <p className="text-muted-foreground text-sm mb-6">Rohan K. · Premium Member</p>
+      <p className="text-muted-foreground text-sm mb-6">{displayName} K. · Premium Member</p>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 mb-8">
@@ -110,18 +115,11 @@ const ProfileView = () => {
         {badges.map((b) => {
           const Icon = b.icon;
           return (
-            <div
-              key={b.label}
-              className={`flex flex-col items-center gap-2 p-4 rounded-2xl ${
-                b.unlocked ? "bg-secondary" : "bg-secondary/50 opacity-40"
-              }`}
-            >
+            <div key={b.label} className={`flex flex-col items-center gap-2 p-4 rounded-2xl ${b.unlocked ? "bg-secondary" : "bg-secondary/50 opacity-40"}`}>
               <div className={`rounded-full p-3 ${b.unlocked ? "bg-foreground" : "bg-muted-foreground/30"}`}>
                 <Icon size={20} className={b.unlocked ? "text-nike-volt" : "text-muted-foreground"} />
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight">
-                {b.label}
-              </span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-center leading-tight">{b.label}</span>
             </div>
           );
         })}
@@ -131,10 +129,7 @@ const ProfileView = () => {
       <h2 className="text-nike-header text-sm mb-3">SETTINGS</h2>
       <div className="space-y-0">
         {settings.map((s) => (
-          <button
-            key={s}
-            className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 active:bg-secondary transition-colors"
-          >
+          <button key={s} className="w-full flex items-center justify-between py-4 border-b border-border last:border-0 active:bg-secondary transition-colors">
             <span className="text-sm font-semibold">{s}</span>
             <ChevronRight size={18} className="text-muted-foreground" />
           </button>
@@ -157,73 +152,36 @@ const ProfileView = () => {
               <>
                 <div className="flex items-center justify-between mb-5">
                   <h2 className="text-nike-header text-lg">RE-CALIBRATE</h2>
-                  <button onClick={() => setShowRecalibrate(false)} className="p-1 text-foreground">
-                    ✕
-                  </button>
+                  <button onClick={() => setShowRecalibrate(false)} className="p-1 text-foreground">✕</button>
                 </div>
-                <p className="text-sm text-muted-foreground mb-5">
-                  Update your preferences and we'll rebuild your program from Week 1.
-                </p>
-
+                <p className="text-sm text-muted-foreground mb-5">Update your preferences and we'll rebuild your program from Week 1.</p>
                 <div className="space-y-4 mb-6">
                   <div>
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Weight (kg)</label>
-                    <input
-                      value={editWeight}
-                      onChange={(e) => setEditWeight(e.target.value)}
-                      className="w-full border border-border rounded-xl px-4 py-3 text-sm font-semibold bg-secondary focus:outline-none focus:ring-2 focus:ring-foreground"
-                      type="number"
-                    />
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1 block">Weight ({profile.units === "imperial" ? "lbs" : "kg"})</label>
+                    <input value={editWeight} onChange={(e) => setEditWeight(e.target.value)} className="w-full border border-border rounded-xl px-4 py-3 text-sm font-semibold bg-secondary focus:outline-none focus:ring-2 focus:ring-foreground" type="number" />
                   </div>
-
                   <div>
                     <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Goal</label>
                     <div className="flex gap-2">
                       {goalOptions.map((g) => (
-                        <button
-                          key={g}
-                          onClick={() => setEditGoal(g)}
-                          className={`chip-filter flex-1 text-center text-xs ${editGoal === g ? "chip-filter-active" : ""}`}
-                        >
-                          {g}
-                        </button>
+                        <button key={g} onClick={() => setEditGoal(g)} className={`chip-filter flex-1 text-center text-xs ${editGoal === g ? "chip-filter-active" : ""}`}>{g}</button>
                       ))}
                     </div>
                   </div>
-
                   <div>
-                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 block">
-                      Daily Time: {editTime}m
-                    </label>
-                    <Slider
-                      value={[editTime]}
-                      onValueChange={([v]) => setEditTime(v)}
-                      min={15}
-                      max={90}
-                      step={5}
-                      className="py-2"
-                    />
+                    <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3 block">Daily Time: {editTime}m</label>
+                    <Slider value={[editTime]} onValueChange={([v]) => setEditTime(v)} min={15} max={90} step={5} className="py-2" />
                   </div>
-
                   <div>
                     <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2 block">Cuisine</label>
                     <div className="flex flex-wrap gap-2">
                       {cuisineOptions.map((c) => (
-                        <button
-                          key={c}
-                          onClick={() => setEditCuisine(c)}
-                          className={`chip-filter text-xs ${editCuisine === c ? "chip-filter-active" : ""}`}
-                        >
-                          {c}
-                        </button>
+                        <button key={c} onClick={() => setEditCuisine(c)} className={`chip-filter text-xs ${editCuisine === c ? "chip-filter-active" : ""}`}>{c}</button>
                       ))}
                     </div>
                   </div>
                 </div>
-
-                <button onClick={handleRegenerate} className="btn-volt w-full text-center py-4">
-                  SAVE & REGENERATE
-                </button>
+                <button onClick={handleRegenerate} className="btn-volt w-full text-center py-4">SAVE & REGENERATE</button>
               </>
             )}
           </div>
