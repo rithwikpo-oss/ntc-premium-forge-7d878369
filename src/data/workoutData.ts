@@ -63,4 +63,8 @@ export const promptToModKey: Record<string, string> = {
   "Hotel gym (Dumbbells only)": "hotel_gym",
   "I slept poorly": "bad_knee",
   "Only have 20 mins": "only_15_mins",
+  "Too Sore": "bad_knee",
+  "No Equipment": "only_15_mins",
+  "Less Time": "only_15_mins",
+  "Different Muscle Group": "hotel_gym",
 };
