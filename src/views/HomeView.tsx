@@ -1,70 +1,51 @@
-import { useState } from "react";
-import { Activity, Sparkles, Loader2, Send, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useUser } from "@/contexts/UserContext";
-import WorkoutCard from "@/components/WorkoutCard";
-import { defaultWorkout, modifications, promptToModKey, type Workout } from "@/data/workoutData";
-import challengeImg from "@/assets/workout-challenge.jpg";
-import yogaImg from "@/assets/workout-yoga.jpg";
-import coreImg from "@/assets/workout-core.jpg";
-import cardioImg from "@/assets/workout-cardio.jpg";
-import mobilityImg from "@/assets/workout-mobility.jpg";
-import legsImg from "@/assets/workout-legs.jpg";
-import metconImg from "@/assets/workout-dumbbell-metcon.jpg";
+import { Activity, Sparkles } from "lucide-react";
+import { useUser, dietMacroTargets } from "@/contexts/UserContext";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const today = 2;
 
-const quickPrompts = [
-  "I slept poorly",
-  "Only have 20 mins",
-  "Hotel gym (Dumbbells only)",
+// LeetCode-style activity data (28 days, 4 rows x 7 cols)
+const activityData = [
+  [3, 2, 0, 3, 1, 0, 0],
+  [3, 3, 2, 0, 3, 1, 0],
+  [0, 3, 3, 2, 1, 0, 0],
+  [3, 2, 3, 0, 0, 0, 0],
 ];
 
+const getActivityColor = (level: number) => {
+  if (level === 0) return "bg-secondary";
+  if (level === 1) return "bg-nike-volt/30";
+  if (level === 2) return "bg-nike-volt/60";
+  return "bg-nike-volt";
+};
+
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return "GOOD MORNING";
+  if (h < 17) return "GOOD AFTERNOON";
+  return "GOOD EVENING";
+};
+
 const HomeView = () => {
-  const { toast } = useToast();
   const { profile } = useUser();
-  const [currentWorkout, setCurrentWorkout] = useState<Workout>(defaultWorkout);
-  const [showModify, setShowModify] = useState(false);
-  const [adapting, setAdapting] = useState(false);
-  const [customInput, setCustomInput] = useState("");
-
-  const isDefault = currentWorkout.title === defaultWorkout.title;
   const pct = Math.round((profile.currentWeek / profile.totalWeeks) * 100);
+  const displayName = profile.name || "ROHAN";
+  const targets = dietMacroTargets[profile.cuisine] || dietMacroTargets.Standard;
 
-  const recommendedWorkouts = [
-    { image: yogaImg, title: "Yoga for Runners", subtitle: "20 min · Flexibility" },
-    { image: coreImg, title: "Quick Core", subtitle: "10 min · Abs" },
-    { image: cardioImg, title: "HIIT Cardio", subtitle: "15 min · Endurance" },
-    { image: mobilityImg, title: "Recovery Flow", subtitle: "15 min · Mobility" },
+  const macros = [
+    { label: "Calories", current: profile.calories, target: targets.calories, unit: "kcal" },
+    { label: "Protein", current: profile.protein, target: targets.protein, unit: "g" },
+    { label: "Carbs", current: profile.carbs, target: targets.carbs, unit: "g" },
+    { label: "Fat", current: profile.fats, target: targets.fats, unit: "g" },
+    { label: "Fiber", current: profile.fiber, target: targets.fiber, unit: "g" },
   ];
-
-  const handleAdapt = (prompt: string) => {
-    const modKey = promptToModKey[prompt] || "hotel_gym";
-    const mod = modifications[modKey];
-    setAdapting(true);
-    setTimeout(() => {
-      setAdapting(false);
-      setShowModify(false);
-      setCurrentWorkout(mod);
-      toast({
-        title: "Workout Adapted ✓",
-        description: mod.toast_message || "Workout updated.",
-      });
-    }, 2000);
-  };
-
-  const workoutImg = isDefault ? legsImg : metconImg;
-
-  // Generate title based on daily time from onboarding
-  const workoutTitle = isDefault
-    ? `${profile.dailyTime}-Min Heavy Lower Body`
-    : currentWorkout.title;
 
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
       {/* Header */}
-      <h1 className="text-nike-header text-2xl mb-5">GOOD MORNING, ROHAN</h1>
+      <h1 className="text-nike-header text-2xl mb-5">
+        {getGreeting()}, {displayName.toUpperCase()}
+      </h1>
 
       {/* Calendar Strip */}
       <div className="flex justify-between mb-3">
@@ -82,10 +63,7 @@ const HomeView = () => {
             >
               {17 + i}
             </div>
-            {/* Green dot for completed days */}
-            {i < today && (
-              <div className="w-1.5 h-1.5 rounded-full bg-nike-volt" />
-            )}
+            {i < today && <div className="w-1.5 h-1.5 rounded-full bg-nike-volt" />}
           </div>
         ))}
       </div>
@@ -101,56 +79,34 @@ const HomeView = () => {
           </span>
         </div>
         <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
-          <div
-            className="h-full bg-nike-volt rounded-full transition-all duration-500"
-            style={{ width: `${pct}%` }}
-          />
+          <div className="h-full bg-nike-volt rounded-full transition-all duration-500" style={{ width: `${pct}%` }} />
         </div>
         <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{pct}% Complete</p>
       </div>
 
-      {/* Today's Scheduled Workout Card */}
-      <div className="relative rounded-2xl overflow-hidden mb-2">
-        <img
-          src={workoutImg}
-          alt={workoutTitle}
-          className="w-full aspect-[16/9] object-cover transition-all duration-500"
-          width={800}
-          height={512}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <p className="text-primary-foreground/60 text-xs font-semibold uppercase tracking-widest mb-1">
-            Today's Workout
-          </p>
-          <h2 className="text-primary-foreground font-black text-lg uppercase tracking-tight leading-tight">
-            {workoutTitle}
-          </h2>
-          <div className="flex gap-4 mt-2 mb-3">
-            <span className="text-primary-foreground/70 text-xs font-semibold">
-              Intensity: {currentWorkout.intensity}
-            </span>
-            <span className="text-primary-foreground/70 text-xs font-semibold">
-              Equipment: {currentWorkout.equipment.join(", ")}
-            </span>
-          </div>
-          <button
-            className="btn-volt text-xs"
-            onClick={() => toast({ title: "WORKOUT STARTED", description: "Let's crush it! 💪" })}
-          >
-            Start Workout
-          </button>
+      {/* Activity Tracker (LeetCode Style) */}
+      <h2 className="text-nike-header text-sm mb-3">ACTIVITY TRACKER</h2>
+      <div className="bg-secondary rounded-2xl p-4 mb-6">
+        <div className="space-y-1.5">
+          {activityData.map((row, ri) => (
+            <div key={ri} className="flex gap-1.5 justify-center">
+              {row.map((level, ci) => (
+                <div
+                  key={ci}
+                  className={`w-8 h-8 rounded-md ${getActivityColor(level)} transition-colors`}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+        <div className="flex items-center justify-end gap-1 mt-3">
+          <span className="text-[9px] text-muted-foreground font-semibold">Less</span>
+          {[0, 1, 2, 3].map((l) => (
+            <div key={l} className={`w-3 h-3 rounded-sm ${getActivityColor(l)}`} />
+          ))}
+          <span className="text-[9px] text-muted-foreground font-semibold">More</span>
         </div>
       </div>
-
-      {/* Modify Plan Button */}
-      <button
-        onClick={() => { setShowModify(true); setAdapting(false); }}
-        className="w-full flex items-center justify-center gap-2 border border-border rounded-2xl py-3 mb-6 active:scale-[0.98] transition-transform"
-      >
-        <Sparkles size={16} className="text-nike-volt" />
-        <span className="text-xs font-black uppercase tracking-wider">Modify Today's Plan</span>
-      </button>
 
       {/* AI Readiness Card */}
       <div className="card-premium mb-6">
@@ -175,79 +131,57 @@ const HomeView = () => {
           <div className="flex items-start gap-2">
             <Sparkles size={16} className="text-nike-volt mt-0.5 flex-shrink-0" />
             <p className="text-primary-foreground/80 text-xs leading-relaxed">
-              <span className="font-bold text-primary-foreground">AI Insight:</span> Your readiness is low today. We've automatically swapped your {profile.dailyTime}-min Heavy Squat session for a 15-min Recovery Mobility flow.
+              <span className="font-bold text-primary-foreground">AI Insight:</span>{" "}
+              {displayName}, based on your {profile.goal} goal and low readiness, we suggest prioritizing mobility today. Head to the Workouts tab to swap your session.
             </p>
           </div>
         </div>
       </div>
 
-      {/* For You */}
-      <h2 className="text-nike-header text-base mb-4">FOR YOU</h2>
-      <div className="flex gap-3 overflow-x-auto pb-4 -mx-5 px-5 scrollbar-hide">
-        {recommendedWorkouts.map((w) => (
-          <WorkoutCard key={w.title} image={w.image} title={w.title} subtitle={w.subtitle} />
+      {/* Fitness Stats */}
+      <h2 className="text-nike-header text-sm mb-3">FITNESS STATS</h2>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        {[
+          { label: "Total Workouts", value: "12" },
+          { label: "Active Minutes", value: "340" },
+          { label: "Current Streak", value: "4 Days" },
+        ].map((s) => (
+          <div key={s.label} className="bg-secondary rounded-2xl p-3 text-center">
+            <p className="font-black text-lg">{s.value}</p>
+            <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mt-0.5">{s.label}</p>
+          </div>
         ))}
       </div>
 
-      {/* Modify Plan Bottom Sheet */}
-      {showModify && (
-        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
-          <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300">
-            {adapting ? (
-              <div className="flex flex-col items-center justify-center py-16 gap-4">
-                <div className="bg-primary rounded-full p-6">
-                  <Loader2 size={32} className="text-nike-volt animate-spin" />
-                </div>
-                <p className="text-sm font-bold text-center">Scanning alternative exercises...</p>
-                <p className="text-xs text-muted-foreground text-center">Rebuilding circuit for hotel equipment...</p>
+      {/* Today's Macros (Horizontal Bars) */}
+      <h2 className="text-nike-header text-sm mb-3">TODAY'S MACROS</h2>
+      <div className="space-y-3 mb-6">
+        {macros.map((m) => {
+          const pctFill = Math.min((m.current / m.target) * 100, 100);
+          const isCalories = m.label === "Calories";
+          return (
+            <div key={m.label}>
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-xs font-bold uppercase tracking-wider ${isCalories ? "" : "text-muted-foreground"}`}>
+                  {m.label}
+                </span>
+                <span className="text-xs font-semibold text-muted-foreground">
+                  {m.current}{m.unit} / {m.target}{m.unit}
+                </span>
               </div>
-            ) : (
-              <>
-                <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-nike-header text-lg">MODIFY PLAN</h2>
-                  <button onClick={() => setShowModify(false)} className="p-1">
-                    <X size={24} />
-                  </button>
-                </div>
-
-                <p className="text-sm text-muted-foreground mb-5">
-                  Life happens. How should we adjust today's session?
-                </p>
-
-                {/* Quick Prompts */}
-                <div className="flex flex-wrap gap-2 mb-5">
-                  {quickPrompts.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => handleAdapt(p)}
-                      className="chip-filter active:scale-95 transition-transform"
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Custom Input */}
-                <div className="flex gap-2">
-                  <input
-                    value={customInput}
-                    onChange={(e) => setCustomInput(e.target.value)}
-                    placeholder="Or type your constraint..."
-                    className="flex-1 border border-border rounded-full px-4 py-3 text-sm bg-secondary focus:outline-none focus:ring-2 focus:ring-foreground"
-                    onKeyDown={(e) => e.key === "Enter" && customInput && handleAdapt(customInput)}
-                  />
-                  <button
-                    onClick={() => customInput && handleAdapt(customInput)}
-                    className="bg-foreground text-background rounded-full p-3"
-                  >
-                    <Send size={16} />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+              <div className={`w-full ${isCalories ? "h-3" : "h-2"} bg-secondary rounded-full overflow-hidden`}>
+                <div
+                  className={`h-full rounded-full transition-all duration-700 ${isCalories ? "bg-nike-volt" : "bg-foreground/70"}`}
+                  style={{ width: `${pctFill}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+        <p className="text-[10px] text-muted-foreground font-semibold">
+          Targets based on your {profile.cuisine} diet preference
+        </p>
+      </div>
     </div>
   );
 };

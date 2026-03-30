@@ -1,67 +1,70 @@
-import { useState, useEffect } from "react";
-import { Camera, Sparkles, X, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { Camera, Sparkles, X, Loader2, Search, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser, dietMacroTargets } from "@/contexts/UserContext";
 
-const cuisines = ["South Indian Lunch", "Mediterranean Bowl", "Japanese Bento", "Protein Smoothie"];
+const templateMeals = [
+  { label: "South Indian Breakfast", cal: 450, p: 15, c: 60, f: 12, fi: 5 },
+  { label: "Standard Post-Workout Shake", cal: 350, p: 40, c: 30, f: 5, fi: 3 },
+  { label: "Mediterranean Bowl", cal: 550, p: 25, c: 55, f: 20, fi: 8 },
+  { label: "Protein Smoothie", cal: 280, p: 35, c: 20, f: 4, fi: 2 },
+];
 
-const CircularProgress = ({
-  label,
-  current,
-  target,
-  colorClass,
-}: {
-  label: string;
-  current: number;
-  target: number;
-  colorClass: string;
-}) => {
-  const pct = Math.min((current / target) * 100, 100);
-  const r = 38;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (pct / 100) * circ;
-
-  return (
-    <div className="flex flex-col items-center">
-      <svg width="90" height="90" className="-rotate-90">
-        <circle cx="45" cy="45" r={r} fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
-        <circle
-          cx="45"
-          cy="45"
-          r={r}
-          fill="none"
-          className={colorClass}
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)" }}
-        />
-      </svg>
-      <span className="font-black text-lg -mt-14">{current}g</span>
-      <span className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-8">
-        {label}
-      </span>
-      <span className="text-[10px] text-muted-foreground">/ {target}g</span>
-    </div>
-  );
-};
+const searchSuggestions = [
+  { name: "Chicken Breast (100g)", cal: 165, p: 31, c: 0, f: 3.6, fi: 0 },
+  { name: "Oats (1 cup)", cal: 307, p: 11, c: 55, f: 5, fi: 8 },
+  { name: "Brown Rice (1 cup)", cal: 216, p: 5, c: 45, f: 1.8, fi: 3.5 },
+  { name: "Eggs (2 large)", cal: 156, p: 13, c: 1, f: 11, fi: 0 },
+  { name: "Greek Yogurt (200g)", cal: 130, p: 20, c: 8, f: 2, fi: 0 },
+];
 
 const NutritionView = () => {
   const { toast } = useToast();
+  const { profile, logMeal } = useUser();
   const [showCamera, setShowCamera] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(false);
 
-  // Animated macro values
-  const [protein, setProtein] = useState(60);
-  const [carbs, setCarbs] = useState(95);
-  const [fats, setFats] = useState(28);
+  // Search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Editable confirmation card
+  const [confirmMeal, setConfirmMeal] = useState<{ name: string; cal: number; p: number; c: number; f: number; fi: number } | null>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editP, setEditP] = useState(0);
+  const [editC, setEditC] = useState(0);
+  const [editF, setEditF] = useState(0);
+  const [editFi, setEditFi] = useState(0);
+  const [editCal, setEditCal] = useState(0);
+
+  const targets = dietMacroTargets[profile.cuisine] || dietMacroTargets.Standard;
 
   const macros = [
-    { label: "Protein", current: protein, target: 150, color: "stroke-nike-volt" },
-    { label: "Carbs", current: carbs, target: 250, color: "stroke-foreground" },
-    { label: "Fats", current: fats, target: 65, color: "stroke-muted-foreground" },
+    { label: "Calories", current: profile.calories, target: targets.calories, unit: "kcal" },
+    { label: "Protein", current: profile.protein, target: targets.protein, unit: "g" },
+    { label: "Carbs", current: profile.carbs, target: targets.carbs, unit: "g" },
+    { label: "Fat", current: profile.fats, target: targets.fats, unit: "g" },
+    { label: "Fiber", current: profile.fiber, target: targets.fiber, unit: "g" },
   ];
+
+  const filteredSuggestions = searchQuery.length > 0
+    ? searchSuggestions.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    : [];
+
+  const openConfirm = (name: string, cal: number, p: number, c: number, f: number, fi: number) => {
+    setConfirmMeal({ name, cal, p, c, f, fi });
+    setEditP(p); setEditC(c); setEditF(f); setEditFi(fi); setEditCal(cal);
+    setEditMode(false);
+    setShowSuggestions(false);
+    setSearchQuery("");
+  };
+
+  const handleSaveMeal = () => {
+    logMeal(editP, editC, editF, editFi, editCal);
+    toast({ title: "Meal Logged ✓", description: `${confirmMeal?.name} added to daily tracker.` });
+    setConfirmMeal(null);
+  };
 
   const handleSnap = () => {
     setScanning(true);
@@ -72,48 +75,83 @@ const NutritionView = () => {
     }, 2000);
   };
 
-  const handleLogMeal = () => {
+  const handleLogScanned = () => {
     setShowCamera(false);
-    // Animate macro rings forward
-    setProtein((p) => p + 40);
-    setCarbs((c) => c + 50);
-    setFats((f) => f + 15);
-    toast({ title: "Meal Logged ✓", description: "Macros updated from AI scan." });
+    openConfirm("Chicken Tikka Masala & Rice", 650, 40, 50, 15, 4);
   };
+
+  const inputClass = "w-full border border-border rounded-xl px-4 py-2 text-sm font-semibold bg-secondary focus:outline-none focus:ring-2 focus:ring-foreground";
 
   return (
     <div className="px-5 pt-14 pb-24 max-w-lg mx-auto">
       <h1 className="text-nike-header text-2xl mb-6">NUTRITION</h1>
 
-      {/* Macro circles */}
-      <div className="flex justify-around mb-8">
-        {macros.map((m) => (
-          <CircularProgress key={m.label} label={m.label} current={m.current} target={m.target} colorClass={m.color} />
-        ))}
+      {/* Horizontal Macro Bars */}
+      <div className="space-y-3 mb-6">
+        {macros.map((m) => {
+          const pctFill = Math.min((m.current / m.target) * 100, 100);
+          const isCalories = m.label === "Calories";
+          return (
+            <div key={m.label}>
+              <div className="flex items-center justify-between mb-1">
+                <span className={`text-xs font-bold uppercase tracking-wider ${isCalories ? "" : "text-muted-foreground"}`}>{m.label}</span>
+                <span className="text-xs font-semibold text-muted-foreground">{m.current}{m.unit} / {m.target}{m.unit}</span>
+              </div>
+              <div className={`w-full ${isCalories ? "h-3" : "h-2"} bg-secondary rounded-full overflow-hidden`}>
+                <div className={`h-full rounded-full transition-all duration-700 ${isCalories ? "bg-nike-volt" : "bg-foreground/70"}`} style={{ width: `${pctFill}%` }} />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Cuisine Templates */}
-      <h2 className="text-nike-header text-sm mb-3">CUISINE TEMPLATES</h2>
-      <div className="flex gap-2 flex-wrap mb-6">
-        {cuisines.map((c) => (
+      {/* Search & Log Meal */}
+      <h2 className="text-nike-header text-sm mb-3">LOG TODAY'S MEAL</h2>
+      <div className="relative mb-4">
+        <div className="flex items-center border border-border rounded-xl bg-secondary px-3">
+          <Search size={16} className="text-muted-foreground" />
+          <input
+            value={searchQuery}
+            onChange={(e) => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder="Search food..."
+            className="flex-1 bg-transparent px-3 py-3 text-sm font-semibold focus:outline-none"
+          />
+        </div>
+        {showSuggestions && filteredSuggestions.length > 0 && (
+          <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-xl mt-1 z-20 shadow-lg overflow-hidden">
+            {filteredSuggestions.map((s) => (
+              <button
+                key={s.name}
+                onClick={() => openConfirm(s.name, s.cal, s.p, s.c, s.f, s.fi)}
+                className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-secondary transition-colors border-b border-border last:border-0"
+              >
+                {s.name}
+                <span className="text-muted-foreground text-xs ml-2">{s.cal} kcal</span>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Quick Log Templates */}
+      <h2 className="text-nike-header text-sm mb-3">QUICK LOG</h2>
+      <div className="flex gap-2 overflow-x-auto pb-3 -mx-5 px-5 scrollbar-hide mb-6">
+        {templateMeals.map((t) => (
           <button
-            key={c}
-            onClick={() => toast({ title: "Macros Logged!", description: `${c} added to your daily tracker.` })}
-            className="chip-filter active:scale-95 transition-transform"
+            key={t.label}
+            onClick={() => openConfirm(t.label, t.cal, t.p, t.c, t.f, t.fi)}
+            className="chip-filter whitespace-nowrap active:scale-95 transition-transform"
           >
-            {c}
+            {t.label}
           </button>
         ))}
       </div>
 
       {/* AI Meal Scanner */}
       <button
-        onClick={() => {
-          setShowCamera(true);
-          setScanResult(false);
-          setScanning(false);
-        }}
-        className="card-premium w-full flex items-center gap-3 active:scale-[0.98] transition-transform"
+        onClick={() => { setShowCamera(true); setScanResult(false); setScanning(false); }}
+        className="card-premium w-full flex items-center gap-3 active:scale-[0.98] transition-transform mb-6"
       >
         <Camera size={24} className="text-nike-volt" />
         <div className="text-left">
@@ -125,17 +163,57 @@ const NutritionView = () => {
         </div>
       </button>
 
+      {/* Editable Macro Confirmation Card */}
+      {confirmMeal && (
+        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
+          <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-nike-header text-base">{confirmMeal.name}</h2>
+              <div className="flex gap-2">
+                <button onClick={() => setEditMode(!editMode)} className="p-1.5 rounded-full bg-secondary">
+                  <Pencil size={14} />
+                </button>
+                <button onClick={() => setConfirmMeal(null)} className="p-1"><X size={22} /></button>
+              </div>
+            </div>
+            <div className="grid grid-cols-5 gap-2 mb-5">
+              {[
+                { label: "Cal", val: editCal, set: setEditCal, unit: "" },
+                { label: "Protein", val: editP, set: setEditP, unit: "g" },
+                { label: "Carbs", val: editC, set: setEditC, unit: "g" },
+                { label: "Fat", val: editF, set: setEditF, unit: "g" },
+                { label: "Fiber", val: editFi, set: setEditFi, unit: "g" },
+              ].map((m) => (
+                <div key={m.label} className="bg-secondary rounded-xl p-3 text-center">
+                  {editMode ? (
+                    <input
+                      type="number"
+                      value={m.val}
+                      onChange={(e) => m.set(Number(e.target.value))}
+                      className="w-full bg-transparent text-center font-black text-lg focus:outline-none"
+                    />
+                  ) : (
+                    <p className="font-black text-lg">{m.val}{m.unit}</p>
+                  )}
+                  <p className="text-[9px] text-muted-foreground font-semibold uppercase">{m.label}</p>
+                </div>
+              ))}
+            </div>
+            <button onClick={handleSaveMeal} className="btn-volt w-full text-center py-3">
+              SAVE TO DAILY LOG
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Camera Modal */}
       {showCamera && (
         <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
           <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-nike-header text-lg">SCAN MEAL</h2>
-              <button onClick={() => setShowCamera(false)} className="p-1">
-                <X size={24} />
-              </button>
+              <button onClick={() => setShowCamera(false)} className="p-1"><X size={24} /></button>
             </div>
-
             {!scanResult ? (
               <>
                 <div className="relative bg-nike-charcoal rounded-2xl aspect-[4/3] mb-5 flex items-center justify-center overflow-hidden">
@@ -150,45 +228,30 @@ const NutritionView = () => {
                       <div className="absolute top-4 right-4 w-8 h-8 border-t-2 border-r-2 border-primary-foreground/50 rounded-tr-lg" />
                       <div className="absolute bottom-4 left-4 w-8 h-8 border-b-2 border-l-2 border-primary-foreground/50 rounded-bl-lg" />
                       <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-primary-foreground/50 rounded-br-lg" />
-                      <p className="text-primary-foreground/40 text-xs font-semibold uppercase tracking-widest">
-                        Point at meal
-                      </p>
+                      <p className="text-primary-foreground/40 text-xs font-semibold uppercase tracking-widest">Point at meal</p>
                     </>
                   )}
                 </div>
                 {!scanning && (
-                  <button onClick={handleSnap} className="btn-volt w-full text-center py-4">
-                    SNAP PHOTO
-                  </button>
+                  <button onClick={handleSnap} className="btn-volt w-full text-center py-4">SNAP PHOTO</button>
                 )}
               </>
             ) : (
               <div className="bg-secondary rounded-2xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <Sparkles size={16} className="text-nike-volt" />
-                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    AI Detection
-                  </span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">AI Detection</span>
                 </div>
                 <h3 className="font-black text-lg">Chicken Tikka Masala & 1 Cup Rice</h3>
                 <div className="grid grid-cols-3 gap-3 mt-3 mb-4">
-                  <div className="bg-background rounded-xl p-3 text-center">
-                    <p className="font-black text-lg">650</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase">kcal</p>
-                  </div>
-                  <div className="bg-background rounded-xl p-3 text-center">
-                    <p className="font-black text-lg">40g</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase">Protein</p>
-                  </div>
-                  <div className="bg-background rounded-xl p-3 text-center">
-                    <p className="font-black text-lg">50g</p>
-                    <p className="text-[10px] text-muted-foreground font-semibold uppercase">Carbs</p>
-                  </div>
+                  {[{ v: "650", l: "kcal" }, { v: "40g", l: "Protein" }, { v: "50g", l: "Carbs" }].map((x) => (
+                    <div key={x.l} className="bg-background rounded-xl p-3 text-center">
+                      <p className="font-black text-lg">{x.v}</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold uppercase">{x.l}</p>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-xs text-muted-foreground font-medium mb-4">✓ Targets will be updated</p>
-                <button onClick={handleLogMeal} className="btn-volt w-full text-center py-3">
-                  LOG MEAL
-                </button>
+                <button onClick={handleLogScanned} className="btn-volt w-full text-center py-3">LOG MEAL</button>
               </div>
             )}
           </div>
