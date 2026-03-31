@@ -2,8 +2,6 @@ import { Activity, Sparkles } from "lucide-react";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
 import MonthlyGoalTracker from "@/components/MonthlyGoalTracker";
 
-const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-const today = 2;
 
 
 const getGreeting = () => {
@@ -34,26 +32,6 @@ const HomeView = () => {
         {getGreeting()}, {displayName.toUpperCase()}
       </h1>
 
-      {/* Calendar Strip */}
-      <div className="flex justify-between mb-3">
-        {days.map((d, i) => (
-          <div key={d} className="flex flex-col items-center gap-1">
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{d}</span>
-            <div
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                i === today
-                  ? "bg-foreground text-background"
-                  : i < today
-                  ? "bg-nike-volt/20 text-foreground"
-                  : "text-muted-foreground"
-              }`}
-            >
-              {17 + i}
-            </div>
-            {i < today && <div className="w-1.5 h-1.5 rounded-full bg-nike-volt" />}
-          </div>
-        ))}
-      </div>
 
       {/* Progress Bar */}
       <div className="mb-6">
