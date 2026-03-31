@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Sparkles, X, Loader2, Search, Pencil } from "lucide-react";
+import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
 
