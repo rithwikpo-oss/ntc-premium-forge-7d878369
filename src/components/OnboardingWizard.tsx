@@ -50,6 +50,7 @@ const OnboardingWizard = () => {
             fats: 28,
             fiber: 8,
             calories: 1200,
+            loggedMeals: [],
           });
         }, 3000);
       }

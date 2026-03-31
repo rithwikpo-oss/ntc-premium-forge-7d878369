@@ -61,7 +61,7 @@ const NutritionView = () => {
   };
 
   const handleSaveMeal = () => {
-    logMeal(editP, editC, editF, editFi, editCal);
+    logMeal(confirmMeal?.name || "Unknown", editP, editC, editF, editFi, editCal);
     toast({ title: "Meal Logged ✓", description: `${confirmMeal?.name} added to daily tracker.` });
     setConfirmMeal(null);
   };
