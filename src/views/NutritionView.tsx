@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
+
+const USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY";
 
 const templateMeals = [
   { label: "South Indian Breakfast", cal: 450, p: 15, c: 60, f: 12, fi: 5 },
@@ -10,13 +12,11 @@ const templateMeals = [
   { label: "Protein Smoothie", cal: 280, p: 35, c: 20, f: 4, fi: 2 },
 ];
 
-const searchSuggestions = [
-  { name: "Chicken Breast (100g)", cal: 165, p: 31, c: 0, f: 3.6, fi: 0 },
-  { name: "Oats (1 cup)", cal: 307, p: 11, c: 55, f: 5, fi: 8 },
-  { name: "Brown Rice (1 cup)", cal: 216, p: 5, c: 45, f: 1.8, fi: 3.5 },
-  { name: "Eggs (2 large)", cal: 156, p: 13, c: 1, f: 11, fi: 0 },
-  { name: "Greek Yogurt (200g)", cal: 130, p: 20, c: 8, f: 2, fi: 0 },
-];
+interface USDAResult {
+  fdcId: number;
+  description: string;
+  caloriesPer100g: number;
+}
 
 const NutritionView = () => {
   const { toast } = useToast();
@@ -30,6 +30,13 @@ const NutritionView = () => {
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [apiResults, setApiResults] = useState<USDAResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Grams prompt
+  const [gramsPrompt, setGramsPrompt] = useState<USDAResult | null>(null);
+  const [gramsInput, setGramsInput] = useState("100");
 
   // Editable confirmation card
   const [confirmMeal, setConfirmMeal] = useState<{ name: string; cal: number; p: number; c: number; f: number; fi: number } | null>(null);
@@ -50,9 +57,63 @@ const NutritionView = () => {
     { label: "Fiber", current: profile.fiber, target: targets.fiber, unit: "g" },
   ];
 
-  const filteredSuggestions = searchQuery.length > 0
-    ? searchSuggestions.filter((s) => s.name.toLowerCase().includes(searchQuery.toLowerCase()))
-    : [];
+  // Debounced USDA API search
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setApiResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch(USDA_API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            query: searchQuery.trim(),
+            dataType: ["Foundation", "SR Legacy"],
+            pageSize: 5,
+          }),
+        });
+        const data = await res.json();
+        const results: USDAResult[] = (data.foods || []).map((food: any) => {
+          const calNutrient = food.foodNutrients?.find((n: any) => n.nutrientId === 1008);
+          return {
+            fdcId: food.fdcId,
+            description: food.description,
+            caloriesPer100g: calNutrient?.value ?? 0,
+          };
+        });
+        setApiResults(results);
+      } catch {
+        setApiResults([]);
+        toast({ title: "Search failed", description: "Could not reach food database." });
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [searchQuery]);
+
+  const handleSelectFood = (item: USDAResult) => {
+    setGramsPrompt(item);
+    setGramsInput("100");
+    setShowSuggestions(false);
+  };
+
+  const handleLogGrams = () => {
+    if (!gramsPrompt) return;
+    const grams = Math.max(0, Number(gramsInput) || 0);
+    const cal = Math.round((gramsPrompt.caloriesPer100g / 100) * grams);
+    const name = gramsPrompt.description.toLowerCase();
+    logMeal(name, 0, 0, 0, 0, cal);
+    toast({ title: "Meal Logged ✓", description: `${name} (${grams}g, ${cal} kcal) added.` });
+    setGramsPrompt(null);
+    setSearchQuery("");
+    setApiResults([]);
+  };
 
   const openConfirm = (name: string, cal: number, p: number, c: number, f: number, fi: number) => {
     setConfirmMeal({ name, cal, p, c, f, fi });
