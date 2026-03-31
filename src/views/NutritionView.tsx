@@ -114,9 +114,14 @@ const NutritionView = () => {
   const handleLogGrams = () => {
     if (!gramsPrompt) return;
     const grams = Math.max(0, Number(gramsInput) || 0);
-    const cal = Math.round((gramsPrompt.caloriesPer100g / 100) * grams);
+    const scale = grams / 100;
+    const cal = Math.round(gramsPrompt.caloriesPer100g * scale);
+    const p = Math.round(gramsPrompt.proteinPer100g * scale);
+    const c = Math.round(gramsPrompt.carbsPer100g * scale);
+    const f = Math.round(gramsPrompt.fatPer100g * scale);
+    const fi = Math.round(gramsPrompt.fiberPer100g * scale);
     const name = gramsPrompt.description.toLowerCase();
-    logMeal(name, 0, 0, 0, 0, cal);
+    logMeal(name, p, c, f, fi, cal);
     toast({ title: "Meal Logged ✓", description: `${name} (${grams}g, ${cal} kcal) added.` });
     setGramsPrompt(null);
     setSearchQuery("");
