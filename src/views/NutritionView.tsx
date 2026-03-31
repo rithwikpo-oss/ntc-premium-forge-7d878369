@@ -272,6 +272,43 @@ const NutritionView = () => {
           </div>
         </div>
       )}
+
+      {/* Added Foods List Modal */}
+      {showFoodsList && (
+        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
+          <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-nike-header text-base">ADDED FOODS</h2>
+              <button onClick={() => setShowFoodsList(false)} className="p-1"><X size={22} /></button>
+            </div>
+            {profile.loggedMeals.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-8">No foods logged yet today.</p>
+            ) : (
+              <div className="overflow-y-auto flex-1 space-y-2">
+                {profile.loggedMeals.map((meal) => (
+                  <div key={meal.id} className="bg-secondary rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{meal.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        deleteMeal(meal.id);
+                        toast({ title: "Removed", description: `${meal.name} removed from log.` });
+                      }}
+                      className="ml-3 p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
