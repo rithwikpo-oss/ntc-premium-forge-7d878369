@@ -1,5 +1,6 @@
 import { Activity, Sparkles } from "lucide-react";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
+import MonthlyGoalTracker from "@/components/MonthlyGoalTracker";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const today = 2;
