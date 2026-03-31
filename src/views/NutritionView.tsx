@@ -21,6 +21,7 @@ const searchSuggestions = [
 const NutritionView = () => {
   const { toast } = useToast();
   const { profile, logMeal, deleteMeal } = useUser();
+  const meals = profile.loggedMeals || [];
   const [showFoodsList, setShowFoodsList] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [scanning, setScanning] = useState(false);
