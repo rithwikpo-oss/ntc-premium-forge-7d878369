@@ -286,7 +286,7 @@ const NutritionView = () => {
               <p className="text-muted-foreground text-sm text-center py-8">No foods logged yet today.</p>
             ) : (
               <div className="overflow-y-auto flex-1 space-y-2">
-                {profile.loggedMeals.map((meal) => (
+                {meals.map((meal) => (
                   <div key={meal.id} className="bg-secondary rounded-xl p-4 flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{meal.name}</p>
