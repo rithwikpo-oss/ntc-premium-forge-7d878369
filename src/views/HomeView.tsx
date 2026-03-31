@@ -5,20 +5,6 @@ import MonthlyGoalTracker from "@/components/MonthlyGoalTracker";
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const today = 2;
 
-// LeetCode-style activity data (28 days, 4 rows x 7 cols)
-const activityData = [
-  [3, 2, 0, 3, 1, 0, 0],
-  [3, 3, 2, 0, 3, 1, 0],
-  [0, 3, 3, 2, 1, 0, 0],
-  [3, 2, 3, 0, 0, 0, 0],
-];
-
-const getActivityColor = (level: number) => {
-  if (level === 0) return "bg-secondary";
-  if (level === 1) return "bg-nike-volt/30";
-  if (level === 2) return "bg-nike-volt/60";
-  return "bg-nike-volt";
-};
 
 const getGreeting = () => {
   const h = new Date().getHours();
