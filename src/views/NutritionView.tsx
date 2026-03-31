@@ -94,7 +94,7 @@ const NutritionView = () => {
           return (
             <div key={m.label}>
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold uppercase tracking-wider ${isCalories ? "" : "text-muted-foreground"}`}>{m.label}</span>
+                <span className={`text-xs font-bold uppercase tracking-wider ${isCalories ? "" : "text-primary"}`}>{m.label}</span>
                 <span className="text-xs font-semibold text-muted-foreground">{m.current}{m.unit} / {m.target}{m.unit}</span>
               </div>
               <div className={`w-full ${isCalories ? "h-3" : "h-2"} bg-secondary rounded-full overflow-hidden`}>
