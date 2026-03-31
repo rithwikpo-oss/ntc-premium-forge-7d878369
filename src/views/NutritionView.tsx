@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
-
-const USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY";
+import { supabase } from "@/integrations/supabase/client";
 
 const templateMeals = [
   { label: "South Indian Breakfast", cal: 450, p: 15, c: 60, f: 12, fi: 5 },
@@ -72,28 +71,19 @@ const NutritionView = () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(USDA_API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            query: searchQuery.trim(),
-            dataType: ["Foundation", "SR Legacy"],
-            pageSize: 5,
-          }),
+        const { data, error } = await supabase.functions.invoke('usda-search', {
+          body: { query: searchQuery.trim() },
         });
-        const data = await res.json();
-        const results: USDAResult[] = (data.foods || []).map((food: any) => {
-          const getNutrient = (id: number) => food.foodNutrients?.find((n: any) => n.nutrientId === id)?.value ?? 0;
-          return {
-            fdcId: food.fdcId,
-            description: food.description,
-            caloriesPer100g: getNutrient(1008),
-            proteinPer100g: getNutrient(1003),
-            carbsPer100g: getNutrient(1005),
-            fatPer100g: getNutrient(1004),
-            fiberPer100g: getNutrient(1079),
-          };
-        });
+        if (error) throw error;
+        const results: USDAResult[] = (data?.foods || []).map((food: any) => ({
+          fdcId: food.fdcId,
+          description: food.description,
+          caloriesPer100g: food.caloriesPer100g,
+          proteinPer100g: food.proteinPer100g,
+          carbsPer100g: food.carbsPer100g,
+          fatPer100g: food.fatPer100g,
+          fiberPer100g: food.fiberPer100g,
+        }));
         setApiResults(results);
       } catch {
         setApiResults([]);
