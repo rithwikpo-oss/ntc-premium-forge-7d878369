@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
+export interface LoggedMeal {
+  id: string;
+  name: string;
+  protein: number;
+  carbs: number;
+  fats: number;
+  fiber: number;
+  calories: number;
+  timestamp: number;
+}
+
 export interface UserProfile {
   name: string;
   age: string;
@@ -14,12 +25,12 @@ export interface UserProfile {
   onboarded: boolean;
   currentWeek: number;
   totalWeeks: number;
-  // Nutrition state shared across views
   protein: number;
   carbs: number;
   fats: number;
   fiber: number;
   calories: number;
+  loggedMeals: LoggedMeal[];
 }
 
 const defaultProfile: UserProfile = {
