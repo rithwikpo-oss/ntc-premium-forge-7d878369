@@ -16,6 +16,10 @@ interface USDAResult {
   fdcId: number;
   description: string;
   caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  fiberPer100g: number;
 }
 
 const NutritionView = () => {
