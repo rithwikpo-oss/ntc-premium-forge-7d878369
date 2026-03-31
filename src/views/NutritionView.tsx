@@ -21,6 +21,7 @@ const searchSuggestions = [
 const NutritionView = () => {
   const { toast } = useToast();
   const { profile, logMeal, deleteMeal } = useUser();
+  const meals = profile.loggedMeals || [];
   const [showFoodsList, setShowFoodsList] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [scanning, setScanning] = useState(false);
@@ -142,9 +143,9 @@ const NutritionView = () => {
       >
         <List size={16} />
         Open Added Foods List
-        {profile.loggedMeals.length > 0 && (
+        {meals.length > 0 && (
           <span className="bg-foreground text-background text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
-            {profile.loggedMeals.length}
+            {meals.length}
           </span>
         )}
       </button>
@@ -281,11 +282,11 @@ const NutritionView = () => {
               <h2 className="text-nike-header text-base">ADDED FOODS</h2>
               <button onClick={() => setShowFoodsList(false)} className="p-1"><X size={22} /></button>
             </div>
-            {profile.loggedMeals.length === 0 ? (
+            {meals.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-8">No foods logged yet today.</p>
             ) : (
               <div className="overflow-y-auto flex-1 space-y-2">
-                {profile.loggedMeals.map((meal) => (
+                {meals.map((meal) => (
                   <div key={meal.id} className="bg-secondary rounded-xl p-4 flex items-center justify-between">
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{meal.name}</p>
