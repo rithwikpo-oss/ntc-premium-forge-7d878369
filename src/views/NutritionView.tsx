@@ -373,8 +373,8 @@ const NutritionView = () => {
 
       {/* Added Foods List Modal */}
       {showFoodsList && (
-        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
-          <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[70vh] flex flex-col">
+        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-background w-full max-w-lg rounded-3xl p-6 animate-in fade-in zoom-in-95 duration-300 max-h-[70vh] flex flex-col">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-nike-header text-base">ADDED FOODS</h2>
               <button onClick={() => setShowFoodsList(false)} className="p-1"><X size={22} /></button>
