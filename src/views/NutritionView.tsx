@@ -2,8 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
-
-const USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY";
+import { supabase } from "@/integrations/supabase/client";
 
 const templateMeals = [
   { label: "South Indian Breakfast", cal: 450, p: 15, c: 60, f: 12, fi: 5 },
