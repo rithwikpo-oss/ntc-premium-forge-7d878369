@@ -401,7 +401,7 @@ const NutritionView = () => {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{meal.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F
+                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F · {meal.fiber}g Fiber
                       </p>
                     </div>
                     <button
