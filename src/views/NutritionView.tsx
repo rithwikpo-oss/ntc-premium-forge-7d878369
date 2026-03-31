@@ -282,7 +282,7 @@ const NutritionView = () => {
               <h2 className="text-nike-header text-base">ADDED FOODS</h2>
               <button onClick={() => setShowFoodsList(false)} className="p-1"><X size={22} /></button>
             </div>
-            {profile.loggedMeals.length === 0 ? (
+            {meals.length === 0 ? (
               <p className="text-muted-foreground text-sm text-center py-8">No foods logged yet today.</p>
             ) : (
               <div className="overflow-y-auto flex-1 space-y-2">
