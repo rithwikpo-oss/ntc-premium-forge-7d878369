@@ -68,7 +68,8 @@ interface UserContextValue {
   profile: UserProfile;
   setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
   resetProgram: (updates: Partial<UserProfile>) => void;
-  logMeal: (p: number, c: number, f: number, fi: number, cal: number) => void;
+  logMeal: (name: string, p: number, c: number, f: number, fi: number, cal: number) => void;
+  deleteMeal: (id: string) => void;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
