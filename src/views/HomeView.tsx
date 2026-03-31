@@ -162,7 +162,7 @@ const HomeView = () => {
           return (
             <div key={m.label}>
               <div className="flex items-center justify-between mb-1">
-                <span className={`text-xs font-bold uppercase tracking-wider ${isCalories ? "" : "text-muted-foreground"}`}>
+                <span className="text-xs font-bold uppercase tracking-wider">
                   {m.label}
                 </span>
                 <span className="text-xs font-semibold text-muted-foreground">
