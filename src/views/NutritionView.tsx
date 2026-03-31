@@ -252,7 +252,7 @@ const NutritionView = () => {
         className="w-full flex items-center justify-center gap-2 border border-border rounded-xl py-3 mb-4 text-sm font-bold uppercase tracking-wider hover:bg-secondary active:scale-[0.98] transition-all"
       >
         <List size={16} />
-        Open Added Foods List
+        LOGGED FOODS
         {meals.length > 0 && (
           <span className="bg-foreground text-background text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
             {meals.length}
