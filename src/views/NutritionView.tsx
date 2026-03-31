@@ -83,11 +83,15 @@ const NutritionView = () => {
         });
         const data = await res.json();
         const results: USDAResult[] = (data.foods || []).map((food: any) => {
-          const calNutrient = food.foodNutrients?.find((n: any) => n.nutrientId === 1008);
+          const getNutrient = (id: number) => food.foodNutrients?.find((n: any) => n.nutrientId === id)?.value ?? 0;
           return {
             fdcId: food.fdcId,
             description: food.description,
-            caloriesPer100g: calNutrient?.value ?? 0,
+            caloriesPer100g: getNutrient(1008),
+            proteinPer100g: getNutrient(1003),
+            carbsPer100g: getNutrient(1005),
+            fatPer100g: getNutrient(1004),
+            fiberPer100g: getNutrient(1079),
           };
         });
         setApiResults(results);
