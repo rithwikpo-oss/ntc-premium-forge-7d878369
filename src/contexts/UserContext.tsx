@@ -52,6 +52,7 @@ const defaultProfile: UserProfile = {
   fats: 28,
   fiber: 8,
   calories: 1200,
+  loggedMeals: [],
 };
 
 // Diet-based macro targets
