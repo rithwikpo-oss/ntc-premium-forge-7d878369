@@ -62,7 +62,7 @@ const MonthlyGoalTracker = () => {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-nike-header text-sm text-muted-foreground">ACTIVITY MAP</h2>
+        <h2 className="text-nike-header text-sm">ACTIVITY MAP</h2>
         <div className="flex items-center gap-2">
           <button onClick={prev} className="p-1 rounded-lg hover:bg-secondary transition-colors">
             <ChevronLeft size={16} className="text-muted-foreground" />
