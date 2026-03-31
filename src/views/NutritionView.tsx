@@ -179,23 +179,59 @@ const NutritionView = () => {
             onFocus={() => setShowSuggestions(true)}
             placeholder="Search food..."
             className="flex-1 bg-transparent px-3 py-3 text-sm font-semibold focus:outline-none"
-          />
+           />
+          {searching && <Loader2 size={16} className="text-muted-foreground animate-spin" />}
         </div>
-        {showSuggestions && filteredSuggestions.length > 0 && (
-          <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-xl mt-1 z-20 shadow-lg overflow-hidden">
-            {filteredSuggestions.map((s) => (
+        {showSuggestions && apiResults.length > 0 && (
+          <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-xl mt-1 z-20 shadow-lg overflow-hidden max-h-60 overflow-y-auto">
+            {apiResults.map((item) => (
               <button
-                key={s.name}
-                onClick={() => openConfirm(s.name, s.cal, s.p, s.c, s.f, s.fi)}
+                key={item.fdcId}
+                onClick={() => handleSelectFood(item)}
                 className="w-full text-left px-4 py-3 text-sm font-semibold hover:bg-secondary transition-colors border-b border-border last:border-0"
               >
-                {s.name}
-                <span className="text-muted-foreground text-xs ml-2">{s.cal} kcal</span>
+                <span className="lowercase">{item.description.toLowerCase()}</span>
+                <span className="text-muted-foreground text-xs ml-2">{item.caloriesPer100g} kcal/100g</span>
               </button>
             ))}
           </div>
         )}
+        {showSuggestions && searching && apiResults.length === 0 && searchQuery.length >= 2 && (
+          <div className="absolute top-full left-0 right-0 bg-background border border-border rounded-xl mt-1 z-20 shadow-lg p-4 text-center">
+            <Loader2 size={20} className="animate-spin mx-auto text-muted-foreground" />
+            <p className="text-xs text-muted-foreground mt-2">Searching USDA database...</p>
+          </div>
+        )}
       </div>
+
+      {/* Grams Prompt */}
+      {gramsPrompt && (
+        <div className="bg-secondary rounded-xl p-4 mb-4 animate-in fade-in duration-200">
+          <p className="font-bold text-sm lowercase mb-1">{gramsPrompt.description.toLowerCase()}</p>
+          <p className="text-xs text-muted-foreground mb-3">{gramsPrompt.caloriesPer100g} kcal per 100g</p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              value={gramsInput}
+              onChange={(e) => setGramsInput(e.target.value)}
+              placeholder="Grams"
+              className="flex-1 border border-border rounded-xl px-3 py-2 text-sm font-semibold bg-background focus:outline-none focus:ring-2 focus:ring-foreground"
+            />
+            <span className="text-xs text-muted-foreground font-semibold">g</span>
+            <button onClick={handleLogGrams} className="btn-volt px-4 py-2 flex items-center gap-1">
+              <Plus size={14} /> Log
+            </button>
+            <button onClick={() => setGramsPrompt(null)} className="p-2">
+              <X size={16} />
+            </button>
+          </div>
+          {Number(gramsInput) > 0 && (
+            <p className="text-xs text-muted-foreground mt-2">
+              = {Math.round((gramsPrompt.caloriesPer100g / 100) * Number(gramsInput))} kcal
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Added Foods List Button */}
       <button
