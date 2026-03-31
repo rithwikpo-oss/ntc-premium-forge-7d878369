@@ -85,28 +85,9 @@ const HomeView = () => {
         <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{pct}% Complete</p>
       </div>
 
-      {/* Activity Tracker (LeetCode Style) */}
-      <h2 className="text-nike-header text-sm mb-3">ACTIVITY TRACKER</h2>
-      <div className="bg-secondary rounded-2xl p-4 mb-6">
-        <div className="space-y-1.5">
-          {activityData.map((row, ri) => (
-            <div key={ri} className="flex gap-1.5 justify-center">
-              {row.map((level, ci) => (
-                <div
-                  key={ci}
-                  className={`w-8 h-8 rounded-md ${getActivityColor(level)} transition-colors`}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-end gap-1 mt-3">
-          <span className="text-[9px] text-muted-foreground font-semibold">Less</span>
-          {[0, 1, 2, 3].map((l) => (
-            <div key={l} className={`w-3 h-3 rounded-sm ${getActivityColor(l)}`} />
-          ))}
-          <span className="text-[9px] text-muted-foreground font-semibold">More</span>
-        </div>
+      {/* Monthly Goal Tracker */}
+      <div className="mb-6">
+        <MonthlyGoalTracker />
       </div>
 
       {/* AI Readiness Card */}
