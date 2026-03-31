@@ -16,6 +16,10 @@ interface USDAResult {
   fdcId: number;
   description: string;
   caloriesPer100g: number;
+  proteinPer100g: number;
+  carbsPer100g: number;
+  fatPer100g: number;
+  fiberPer100g: number;
 }
 
 const NutritionView = () => {
@@ -79,11 +83,15 @@ const NutritionView = () => {
         });
         const data = await res.json();
         const results: USDAResult[] = (data.foods || []).map((food: any) => {
-          const calNutrient = food.foodNutrients?.find((n: any) => n.nutrientId === 1008);
+          const getNutrient = (id: number) => food.foodNutrients?.find((n: any) => n.nutrientId === id)?.value ?? 0;
           return {
             fdcId: food.fdcId,
             description: food.description,
-            caloriesPer100g: calNutrient?.value ?? 0,
+            caloriesPer100g: getNutrient(1008),
+            proteinPer100g: getNutrient(1003),
+            carbsPer100g: getNutrient(1005),
+            fatPer100g: getNutrient(1004),
+            fiberPer100g: getNutrient(1079),
           };
         });
         setApiResults(results);
@@ -106,9 +114,14 @@ const NutritionView = () => {
   const handleLogGrams = () => {
     if (!gramsPrompt) return;
     const grams = Math.max(0, Number(gramsInput) || 0);
-    const cal = Math.round((gramsPrompt.caloriesPer100g / 100) * grams);
+    const scale = grams / 100;
+    const cal = Math.round(gramsPrompt.caloriesPer100g * scale);
+    const p = Math.round(gramsPrompt.proteinPer100g * scale);
+    const c = Math.round(gramsPrompt.carbsPer100g * scale);
+    const f = Math.round(gramsPrompt.fatPer100g * scale);
+    const fi = Math.round(gramsPrompt.fiberPer100g * scale);
     const name = gramsPrompt.description.toLowerCase();
-    logMeal(name, 0, 0, 0, 0, cal);
+    logMeal(name, p, c, f, fi, cal);
     toast({ title: "Meal Logged ✓", description: `${name} (${grams}g, ${cal} kcal) added.` });
     setGramsPrompt(null);
     setSearchQuery("");
@@ -388,7 +401,7 @@ const NutritionView = () => {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm truncate">{meal.name}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">
-                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F
+                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F · {meal.fiber}g Fiber
                       </p>
                     </div>
                     <button
