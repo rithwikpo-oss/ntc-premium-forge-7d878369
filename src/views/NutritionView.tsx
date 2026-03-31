@@ -143,9 +143,9 @@ const NutritionView = () => {
       >
         <List size={16} />
         Open Added Foods List
-        {profile.loggedMeals.length > 0 && (
+        {meals.length > 0 && (
           <span className="bg-foreground text-background text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
-            {profile.loggedMeals.length}
+            {meals.length}
           </span>
         )}
       </button>
