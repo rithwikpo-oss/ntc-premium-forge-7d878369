@@ -1,23 +1,10 @@
 import { Activity, Sparkles } from "lucide-react";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
+import MonthlyGoalTracker from "@/components/MonthlyGoalTracker";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const today = 2;
 
-// LeetCode-style activity data (28 days, 4 rows x 7 cols)
-const activityData = [
-  [3, 2, 0, 3, 1, 0, 0],
-  [3, 3, 2, 0, 3, 1, 0],
-  [0, 3, 3, 2, 1, 0, 0],
-  [3, 2, 3, 0, 0, 0, 0],
-];
-
-const getActivityColor = (level: number) => {
-  if (level === 0) return "bg-secondary";
-  if (level === 1) return "bg-nike-volt/30";
-  if (level === 2) return "bg-nike-volt/60";
-  return "bg-nike-volt";
-};
 
 const getGreeting = () => {
   const h = new Date().getHours();
@@ -84,28 +71,9 @@ const HomeView = () => {
         <p className="text-[10px] text-muted-foreground mt-1 font-semibold">{pct}% Complete</p>
       </div>
 
-      {/* Activity Tracker (LeetCode Style) */}
-      <h2 className="text-nike-header text-sm mb-3">ACTIVITY TRACKER</h2>
-      <div className="bg-secondary rounded-2xl p-4 mb-6">
-        <div className="space-y-1.5">
-          {activityData.map((row, ri) => (
-            <div key={ri} className="flex gap-1.5 justify-center">
-              {row.map((level, ci) => (
-                <div
-                  key={ci}
-                  className={`w-8 h-8 rounded-md ${getActivityColor(level)} transition-colors`}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="flex items-center justify-end gap-1 mt-3">
-          <span className="text-[9px] text-muted-foreground font-semibold">Less</span>
-          {[0, 1, 2, 3].map((l) => (
-            <div key={l} className={`w-3 h-3 rounded-sm ${getActivityColor(l)}`} />
-          ))}
-          <span className="text-[9px] text-muted-foreground font-semibold">More</span>
-        </div>
+      {/* Monthly Goal Tracker */}
+      <div className="mb-6">
+        <MonthlyGoalTracker />
       </div>
 
       {/* AI Readiness Card */}
