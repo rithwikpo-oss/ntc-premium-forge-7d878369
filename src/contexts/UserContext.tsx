@@ -1,5 +1,16 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
 
+export interface LoggedMeal {
+  id: string;
+  name: string;
+  protein: number;
+  carbs: number;
+  fats: number;
+  fiber: number;
+  calories: number;
+  timestamp: number;
+}
+
 export interface UserProfile {
   name: string;
   age: string;
@@ -14,12 +25,12 @@ export interface UserProfile {
   onboarded: boolean;
   currentWeek: number;
   totalWeeks: number;
-  // Nutrition state shared across views
   protein: number;
   carbs: number;
   fats: number;
   fiber: number;
   calories: number;
+  loggedMeals: LoggedMeal[];
 }
 
 const defaultProfile: UserProfile = {
@@ -41,6 +52,7 @@ const defaultProfile: UserProfile = {
   fats: 28,
   fiber: 8,
   calories: 1200,
+  loggedMeals: [],
 };
 
 // Diet-based macro targets
@@ -56,7 +68,8 @@ interface UserContextValue {
   profile: UserProfile;
   setProfile: React.Dispatch<React.SetStateAction<UserProfile>>;
   resetProgram: (updates: Partial<UserProfile>) => void;
-  logMeal: (p: number, c: number, f: number, fi: number, cal: number) => void;
+  logMeal: (name: string, p: number, c: number, f: number, fi: number, cal: number) => void;
+  deleteMeal: (id: string) => void;
 }
 
 const UserContext = createContext<UserContextValue | null>(null);
@@ -74,7 +87,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     setProfile((prev) => ({ ...prev, ...updates, currentWeek: 1 }));
   };
 
-  const logMeal = (p: number, c: number, f: number, fi: number, cal: number) => {
+  const logMeal = (name: string, p: number, c: number, f: number, fi: number, cal: number) => {
+    const meal: LoggedMeal = { id: crypto.randomUUID(), name, protein: p, carbs: c, fats: f, fiber: fi, calories: cal, timestamp: Date.now() };
     setProfile((prev) => ({
       ...prev,
       protein: prev.protein + p,
@@ -82,11 +96,28 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       fats: prev.fats + f,
       fiber: prev.fiber + fi,
       calories: prev.calories + cal,
+      loggedMeals: [...prev.loggedMeals, meal],
     }));
   };
 
+  const deleteMeal = (id: string) => {
+    setProfile((prev) => {
+      const meal = prev.loggedMeals.find((m) => m.id === id);
+      if (!meal) return prev;
+      return {
+        ...prev,
+        protein: Math.max(0, prev.protein - meal.protein),
+        carbs: Math.max(0, prev.carbs - meal.carbs),
+        fats: Math.max(0, prev.fats - meal.fats),
+        fiber: Math.max(0, prev.fiber - meal.fiber),
+        calories: Math.max(0, prev.calories - meal.calories),
+        loggedMeals: prev.loggedMeals.filter((m) => m.id !== id),
+      };
+    });
+  };
+
   return (
-    <UserContext.Provider value={{ profile, setProfile, resetProgram, logMeal }}>
+    <UserContext.Provider value={{ profile, setProfile, resetProgram, logMeal, deleteMeal }}>
       {children}
     </UserContext.Provider>
   );

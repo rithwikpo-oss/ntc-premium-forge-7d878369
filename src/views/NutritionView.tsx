@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Camera, Sparkles, X, Loader2, Search, Pencil } from "lucide-react";
+import { Camera, Sparkles, X, Loader2, Search, Pencil, List, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, dietMacroTargets } from "@/contexts/UserContext";
 
@@ -20,7 +20,8 @@ const searchSuggestions = [
 
 const NutritionView = () => {
   const { toast } = useToast();
-  const { profile, logMeal } = useUser();
+  const { profile, logMeal, deleteMeal } = useUser();
+  const [showFoodsList, setShowFoodsList] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scanResult, setScanResult] = useState(false);
@@ -61,7 +62,7 @@ const NutritionView = () => {
   };
 
   const handleSaveMeal = () => {
-    logMeal(editP, editC, editF, editFi, editCal);
+    logMeal(confirmMeal?.name || "Unknown", editP, editC, editF, editFi, editCal);
     toast({ title: "Meal Logged ✓", description: `${confirmMeal?.name} added to daily tracker.` });
     setConfirmMeal(null);
   };
@@ -133,6 +134,20 @@ const NutritionView = () => {
           </div>
         )}
       </div>
+
+      {/* Added Foods List Button */}
+      <button
+        onClick={() => setShowFoodsList(true)}
+        className="w-full flex items-center justify-center gap-2 border border-border rounded-xl py-3 mb-4 text-sm font-bold uppercase tracking-wider hover:bg-secondary active:scale-[0.98] transition-all"
+      >
+        <List size={16} />
+        Open Added Foods List
+        {profile.loggedMeals.length > 0 && (
+          <span className="bg-foreground text-background text-[10px] font-black rounded-full w-5 h-5 flex items-center justify-center">
+            {profile.loggedMeals.length}
+          </span>
+        )}
+      </button>
 
       {/* Quick Log Templates */}
       <h2 className="text-nike-header text-sm mb-3">QUICK LOG</h2>
@@ -252,6 +267,43 @@ const NutritionView = () => {
                   ))}
                 </div>
                 <button onClick={handleLogScanned} className="btn-volt w-full text-center py-3">LOG MEAL</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Added Foods List Modal */}
+      {showFoodsList && (
+        <div className="fixed inset-0 z-50 bg-foreground/60 backdrop-blur-sm flex items-end justify-center">
+          <div className="bg-background w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-in slide-in-from-bottom duration-300 max-h-[70vh] flex flex-col">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-nike-header text-base">ADDED FOODS</h2>
+              <button onClick={() => setShowFoodsList(false)} className="p-1"><X size={22} /></button>
+            </div>
+            {profile.loggedMeals.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-8">No foods logged yet today.</p>
+            ) : (
+              <div className="overflow-y-auto flex-1 space-y-2">
+                {profile.loggedMeals.map((meal) => (
+                  <div key={meal.id} className="bg-secondary rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-sm truncate">{meal.name}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {meal.calories}kcal · {meal.protein}g P · {meal.carbs}g C · {meal.fats}g F
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        deleteMeal(meal.id);
+                        toast({ title: "Removed", description: `${meal.name} removed from log.` });
+                      }}
+                      className="ml-3 p-2 rounded-full hover:bg-destructive/10 text-destructive transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))}
               </div>
             )}
           </div>
