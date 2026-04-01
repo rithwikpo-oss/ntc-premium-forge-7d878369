@@ -1,30 +1,26 @@
 
 
-## Problem
+## Add Real USDA API Key
 
-The USDA FoodData Central API search is failing because the `DEMO_KEY` API key is heavily rate-limited and frequently blocked for client-side (browser) requests due to CORS restrictions. The session replay shows repeated "Search failed" toast notifications when searching for "rice".
-
-## Solution
-
-Proxy the USDA API call through a backend function to avoid CORS issues and protect the API key. This also allows upgrading to a real API key later without client-side changes.
+The edge function `supabase/functions/usda-search/index.ts` currently hardcodes `DEMO_KEY` in the URL. We need to:
 
 ### Steps
 
-1. **Create a backend function `usda-search`** that:
-   - Accepts a `query` string in the request body
-   - Calls `POST https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY` server-side with `dataType: ["Foundation", "SR Legacy"]` and `pageSize: 5`
-   - Returns the parsed food results (fdcId, description, and nutrient values for IDs 1008, 1003, 1005, 1004, 1079)
-   - Handles errors gracefully
+1. **Add the USDA API key as a secret** using the `add_secret` tool, prompting the user to paste their key. They can get a free key from https://fdc.nal.usda.gov/api-key-signup
 
-2. **Update `NutritionView.tsx`** to:
-   - Replace the direct USDA API fetch with a call to the backend function via `supabase.functions.invoke('usda-search', { body: { query } })`
-   - Keep the same debounce logic and result mapping
-   - Improve error handling to show more specific failure messages
+2. **Update the edge function** to read the key from `Deno.env.get('USDA_API_KEY')` instead of hardcoding `DEMO_KEY`, with a fallback to `DEMO_KEY` if not set
 
-### Technical Details
+3. **Redeploy** the edge function and verify it works
 
-- The edge function runs server-side, bypassing CORS restrictions entirely
-- The `DEMO_KEY` works reliably server-side; can be swapped for a registered key later
-- No database changes needed
-- No authentication changes needed
+### Technical Detail
+
+In `supabase/functions/usda-search/index.ts`, change:
+```typescript
+const USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY";
+```
+to:
+```typescript
+const apiKey = Deno.env.get('USDA_API_KEY') || 'DEMO_KEY';
+const USDA_API_URL = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}`;
+```
 
