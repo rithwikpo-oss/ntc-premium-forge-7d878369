@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const data = await res.json();
+    const data = await res!.json();
     const foods = (data.foods || []).map((food: any) => {
       const getNutrient = (id: number) => food.foodNutrients?.find((n: any) => n.nutrientId === id)?.value ?? 0;
       return {
