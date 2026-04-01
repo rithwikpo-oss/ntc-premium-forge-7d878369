@@ -20,27 +20,34 @@ Deno.serve(async (req) => {
       });
     }
 
-    const res = await fetch(USDA_API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: query.trim(),
-        dataType: ["Foundation", "SR Legacy"],
-        pageSize: 5,
-        nutrients: [1008, 1003, 1005, 1004, 1079],
-      }),
+    const payload = JSON.stringify({
+      query: query.trim(),
+      dataType: ["Foundation", "SR Legacy"],
+      pageSize: 5,
+      nutrients: [1008, 1003, 1005, 1004, 1079],
     });
 
-    if (!res.ok) {
+    let res: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      res = await fetch(USDA_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      });
+      if (res.ok) break;
       const text = await res.text();
-      console.error("USDA API error:", res.status, text);
+      console.error(`USDA API error (attempt ${attempt + 1}):`, res.status, text);
+      if (res.status === 503 && attempt < 2) {
+        await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
       return new Response(JSON.stringify({ error: 'USDA API request failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const data = await res.json();
+    const data = await res!.json();
     const foods = (data.foods || []).map((food: any) => {
       const getNutrient = (id: number) => food.foodNutrients?.find((n: any) => n.nutrientId === id)?.value ?? 0;
       return {

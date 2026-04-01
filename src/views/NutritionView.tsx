@@ -70,6 +70,7 @@ const NutritionView = () => {
     setSearching(true);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(async () => {
+      if (searchQuery.trim().length < 3) { setSearching(false); setApiResults([]); return; }
       try {
         const { data, error } = await supabase.functions.invoke('usda-search', {
           body: { query: searchQuery.trim() },
