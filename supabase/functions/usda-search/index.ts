@@ -3,7 +3,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const USDA_API_URL = "https://api.nal.usda.gov/fdc/v1/foods/search?api_key=DEMO_KEY";
+const apiKey = Deno.env.get('USDA_API_KEY') || 'DEMO_KEY';
+const USDA_API_URL = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${apiKey}`;
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
